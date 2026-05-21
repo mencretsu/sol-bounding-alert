@@ -20,7 +20,7 @@ def format_message(data: dict) -> str:
     holders_str = " | ".join([f"{h}%" for h in top_holders[:7]])
 
     msg = f"""💊🔁 {name} • ${symbol}
-{mint}
+<code>{mint}</code>
 """
     if bundle_flag:
         msg += f"{bundle_flag}\n"
