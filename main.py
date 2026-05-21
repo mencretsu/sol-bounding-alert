@@ -10,19 +10,17 @@ from telegram_bot import init_bot, send_token_alert
 load_dotenv()
 init_bot()
 
-MAX_AGE_SECONDS = 60
+MAX_AGE_SECONDS = 300
 sent_mints = set()
 
 async def handle_new_token(token_data: dict):
     try:
         mint = token_data.get("mint", "")
 
-        # Skip duplikat
         if mint in sent_mints:
             print(f"⏭️ Skip duplikat: {mint}")
             return
 
-        # Cek umur token
         token_time = token_data.get("timestamp", time.time() * 1000) / 1000
         age = time.time() - token_time
 
@@ -30,7 +28,6 @@ async def handle_new_token(token_data: dict):
             print(f"⏭️ Skip, token udah {int(age)}s")
             return
 
-        # Bersihin cache kalau udah gede banget
         if len(sent_mints) > 10000:
             sent_mints.clear()
             print("🧹 Cache dibersihkan")
