@@ -8,7 +8,7 @@ async def listen_new_tokens(callback):
     while True:
         try:
             async with websockets.connect(PUMP_WS) as ws:
-                # Subscribe ke event token baru yang bonding
+                # Subscribe ke event token baru yang bonding subscribeNewToken
                 payload = {
                     "method": "subscribeMigration"
                 }
