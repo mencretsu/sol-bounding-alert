@@ -8,7 +8,7 @@ def format_message(data: dict) -> str:
     msg += f"<code>{mint}</code>"
 
     if similar:
-        msg += f"\n\n⚠️ Nama mirip token lama:\n"
+        msg += f"\n\n⚠️ Similar old tokens found:\n"
         for s in similar[:3]:
             msg += f"┗ {s['name']} • ${s['symbol']}\n"
             msg += f"  <code>{s['mint']}</code>\n"
