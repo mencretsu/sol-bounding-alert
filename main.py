@@ -28,6 +28,7 @@ async def handle_new_token(token_data: dict):
         if age > MAX_AGE_SECONDS:
             print(f"⏭️ Skip, token udah {int(age)}s")
             return
+        await asyncio.sleep(30)
 
         if len(sent_mints) > 10000:
             sent_mints.clear()
