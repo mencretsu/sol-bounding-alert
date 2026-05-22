@@ -11,12 +11,14 @@ async def get_token_info(mint: str) -> dict:
             if resp.status_code == 200:
                 data = resp.json()
                 pairs = data.get("pairs", [])
-                if pairs:
-                    token = pairs[0].get("baseToken", {})
-                    return {
-                        "name": token.get("name", "Unknown"),
-                        "symbol": token.get("symbol", "???"),
-                    }
+                for pair in pairs:
+                    token = pair.get("baseToken", {})
+                    token_mint = token.get("address", "")
+                    if token_mint == mint:
+                        return {
+                            "name": token.get("name", "Unknown"),
+                            "symbol": token.get("symbol", "???"),
+                        }
     except Exception as e:
         print(f"❌ Error fetch token info: {e}")
     return {"name": "Unknown", "symbol": "???"}
