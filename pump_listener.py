@@ -8,9 +8,9 @@ async def listen_new_tokens(callback):
     while True:
         try:
             async with websockets.connect(PUMP_WS) as ws:
-                # Subscribe ke event token baru yang bonding subscribeNewToken
+                # Subscribe ke event token baru yang bonding subscribeNewToken, subscribeMigration
                 payload = {
-                    "method": "subscribeMigration"
+                    "method": "subscribeNewToken"
                 }
                 await ws.send(json.dumps(payload))
                 print("✅ Connected to PumpFun WebSocket")
