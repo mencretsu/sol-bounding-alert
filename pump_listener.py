@@ -10,7 +10,7 @@ async def listen_new_tokens(callback):
             async with websockets.connect(PUMP_WS) as ws:
                 # Subscribe ke event token baru yang bonding subscribeNewToken, subscribeMigration
                 payload = {
-                    "method": "subscribeNewToken"
+                    "method": "subscribeMigration"
                 }
                 await ws.send(json.dumps(payload))
                 print("✅ Connected to PumpFun WebSocket")
