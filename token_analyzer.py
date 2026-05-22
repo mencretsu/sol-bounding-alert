@@ -27,11 +27,8 @@ async def check_similar_tokens(name: str, mint: str) -> list:
         search_term = words[0] if words else name
 
         url = f"https://api.dexscreener.com/latest/dex/search?q={search_term}"
-        headers = {
-            "Accept": "application/json",
-        }
         async with httpx.AsyncClient() as client:
-            resp = await client.get(url, headers=headers, timeout=10)
+            resp = await client.get(url, timeout=10)
 
             if resp.status_code != 200:
                 print(f"⚠️ DexScreener API status: {resp.status_code}")
@@ -46,13 +43,16 @@ async def check_similar_tokens(name: str, mint: str) -> list:
             for pair in pairs:
                 token = pair.get("baseToken", {})
                 token_mint = token.get("address", "")
+                token_name = token.get("name", "").lower()
 
-                # Skip token yang sama & duplikat
                 if token_mint == mint or token_mint in seen_mints:
                     continue
 
-                # Filter Solana aja
                 if pair.get("chainId") != "solana":
+                    continue
+
+                # Harus beneran mengandung kata yang sama
+                if search_term.lower() not in token_name:
                     continue
 
                 seen_mints.add(token_mint)
