@@ -50,11 +50,9 @@ async def check_similar_tokens(name: str, mint: str, symbol: str) -> dict:
                 if token_mint == mint or token_mint in seen_mints:
                     continue
 
-                # Solana only
                 if pair.get("chainId") != "solana":
                     continue
 
-                # CA harus berakhiran pump
                 if not token_mint.endswith("pump"):
                     continue
 
