@@ -12,14 +12,18 @@ async def listen_new_tokens(callback):
                 ping_interval=20,
                 ping_timeout=10
             ) as ws:
-                payload = {
-                    "method": "subscribeMigration"
-                }
+                payload = {"method": "subscribeMigration"}
                 await ws.send(json.dumps(payload))
                 print("✅ Connected to PumpFun WebSocket")
 
                 async for message in ws:
                     data = json.loads(message)
+                    
+                    # Skip pesan konfirmasi
+                    if "message" in data:
+                        print(f"ℹ️ Info: {data['message']}")
+                        continue
+                    
                     await callback(data)
 
         except Exception as e:
