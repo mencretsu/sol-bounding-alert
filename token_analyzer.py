@@ -5,22 +5,18 @@ RPC = os.getenv("HELIUS_RPC", "https://api.mainnet-beta.solana.com")
 
 async def get_token_info(mint: str) -> dict:
     try:
-        url = f"https://frontend-api.pump.fun/coins/{mint}"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "application/json",
-            "Origin": "https://pump.fun",
-            "Referer": "https://pump.fun/"
-        }
+        url = f"https://api.dexscreener.com/latest/dex/tokens/{mint}"
         async with httpx.AsyncClient() as client:
-            resp = await client.get(url, headers=headers, timeout=10)
-            print(f"🔍 Token info status: {resp.status_code}")  # tambahin ini
+            resp = await client.get(url, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
-                return {
-                    "name": data.get("name", "Unknown"),
-                    "symbol": data.get("symbol", "???"),
-                }
+                pairs = data.get("pairs", [])
+                if pairs:
+                    token = pairs[0].get("baseToken", {})
+                    return {
+                        "name": token.get("name", "Unknown"),
+                        "symbol": token.get("symbol", "???"),
+                    }
     except Exception as e:
         print(f"❌ Error fetch token info: {e}")
     return {"name": "Unknown", "symbol": "???"}
@@ -30,32 +26,46 @@ async def check_similar_tokens(name: str, mint: str) -> list:
         words = [w for w in name.split() if len(w) > 2]
         search_term = words[0] if words else name
 
-        url = f"https://frontend-api.pump.fun/coins?searchTerm={search_term}&limit=10"
+        url = f"https://api.dexscreener.com/latest/dex/search?q={search_term}"
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
             "Accept": "application/json",
-            "Origin": "https://pump.fun",
-            "Referer": "https://pump.fun/"
         }
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, headers=headers, timeout=10)
 
             if resp.status_code != 200:
-                print(f"⚠️ Similar tokens API status: {resp.status_code}")
+                print(f"⚠️ DexScreener API status: {resp.status_code}")
                 return []
 
-            coins = resp.json()
+            data = resp.json()
+            pairs = data.get("pairs", [])
+
             similar = []
-            for coin in coins:
-                if coin["mint"] == mint:
+            seen_mints = set()
+
+            for pair in pairs:
+                token = pair.get("baseToken", {})
+                token_mint = token.get("address", "")
+
+                # Skip token yang sama & duplikat
+                if token_mint == mint or token_mint in seen_mints:
                     continue
+
+                # Filter Solana aja
+                if pair.get("chainId") != "solana":
+                    continue
+
+                seen_mints.add(token_mint)
                 similar.append({
-                    "name": coin["name"],
-                    "symbol": coin["symbol"],
-                    "mint": coin["mint"]
+                    "name": token.get("name", "Unknown"),
+                    "symbol": token.get("symbol", "???"),
+                    "mint": token_mint
                 })
 
-            return similar[:3]
+                if len(similar) >= 3:
+                    break
+
+            return similar
 
     except Exception as e:
         print(f"❌ Error cek similar tokens: {e}")
