@@ -21,7 +21,7 @@ async def get_token_info(mint: str) -> dict:
         print(f"❌ Error fetch token info: {e}")
     return {"name": "Unknown", "symbol": "???"}
 
-async def check_similar_tokens(name: str, mint: str) -> list:
+async def check_similar_tokens(name: str, mint: str, symbol: str) -> dict:
     try:
         words = [w for w in name.split() if len(w) > 2]
         search_term = words[0] if words else name
@@ -32,44 +32,48 @@ async def check_similar_tokens(name: str, mint: str) -> list:
 
             if resp.status_code != 200:
                 print(f"⚠️ DexScreener API status: {resp.status_code}")
-                return []
+                return {"similar_names": [], "similar_ticks": []}
 
             data = resp.json()
             pairs = data.get("pairs", [])
 
-            similar = []
+            similar_names = []
+            similar_ticks = []
             seen_mints = set()
 
             for pair in pairs:
                 token = pair.get("baseToken", {})
                 token_mint = token.get("address", "")
                 token_name = token.get("name", "").lower()
+                token_symbol = token.get("symbol", "").lower()
 
                 if token_mint == mint or token_mint in seen_mints:
                     continue
 
+                # Solana only
                 if pair.get("chainId") != "solana":
                     continue
 
-                # Harus beneran mengandung kata yang sama
-                if search_term.lower() not in token_name:
+                # CA harus berakhiran pump
+                if not token_mint.endswith("pump"):
                     continue
 
                 seen_mints.add(token_mint)
-                similar.append({
-                    "name": token.get("name", "Unknown"),
-                    "symbol": token.get("symbol", "???"),
-                    "mint": token_mint
-                })
 
-                if len(similar) >= 3:
-                    break
+                if search_term.lower() in token_name:
+                    similar_names.append(token_mint)
 
-            return similar
+                if token_symbol == symbol.lower():
+                    similar_ticks.append(token_mint)
+
+            return {
+                "similar_names": similar_names[:5],
+                "similar_ticks": similar_ticks[:5]
+            }
 
     except Exception as e:
         print(f"❌ Error cek similar tokens: {e}")
-        return []
+        return {"similar_names": [], "similar_ticks": []}
 
 async def analyze_token(token_data: dict) -> dict:
     mint = token_data.get("mint", "")
@@ -78,11 +82,12 @@ async def analyze_token(token_data: dict) -> dict:
     name = info["name"]
     symbol = info["symbol"]
 
-    similar = await check_similar_tokens(name, mint)
+    similar = await check_similar_tokens(name, mint, symbol)
 
     return {
         "name": name,
         "symbol": symbol,
         "mint": mint,
-        "similar_tokens": similar,
+        "similar_names": similar["similar_names"],
+        "similar_ticks": similar["similar_ticks"],
     }
