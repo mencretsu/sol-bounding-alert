@@ -14,6 +14,7 @@ MAX_AGE_SECONDS = 300
 sent_mints = set()
 
 async def handle_new_token(token_data: dict):
+    print(f"RAW DATA: {token_data}")  # tambahin ini
     try:
         mint = token_data.get("mint", "")
 
