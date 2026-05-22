@@ -30,18 +30,28 @@ async def handle_new_token(token_data: dict):
 
         if len(sent_mints) > 10000:
             sent_mints.clear()
-            print("🧹 Cache dibersihkan")
 
         sent_mints.add(mint)
 
         print(f"🆕 New token: {token_data.get('name')} - umur {int(age)}s")
-        analyzed = await analyze_token(token_data)
+        
+        try:
+            analyzed = await analyze_token(token_data)
+        except Exception as e:
+            print(f"❌ Analyze error: {e}")
+            analyzed = {
+                "name": token_data.get("name", "Unknown"),
+                "symbol": token_data.get("symbol", "???"),
+                "mint": mint,
+                "similar_tokens": []
+            }
+
         msg = format_message(analyzed)
         await send_token_alert(msg)
         print("✅ Sent to Telegram")
 
     except Exception as e:
-        print(f"❌ Error handling token: {e}")
+        print(f"❌ Error: {e}")
 
 async def main():
     print("🚀 Starting PumpFun Bot...")
