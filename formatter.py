@@ -5,7 +5,7 @@ def format_message(data: dict) -> str:
     similar_names = data.get("similar_names", [])
     similar_ticks = data.get("similar_ticks", [])
 
-    msg = f"💊 {name} • ${symbol}\n"
+    msg = f"💊 <code>{name}</code> • ${symbol}\n\n"
     msg += f"<code>{mint}</code>"
 
     if similar_names:
