@@ -61,10 +61,16 @@ async def check_similar_tokens(name: str, mint: str, symbol: str) -> dict:
                 seen_mints.add(token_mint)
 
                 if search_term.lower() in token_name:
-                    similar_names.append(token_mint)
+                    similar_names.append({
+                        "mint": token_mint,
+                        "symbol": token.get("symbol", "???")
+                    })
 
                 if token_symbol == symbol.lower():
-                    similar_ticks.append(token_mint)
+                    similar_ticks.append({
+                        "mint": token_mint,
+                        "symbol": token.get("symbol", "???")
+                    })
 
             return {
                 "similar_names": similar_names[:5],
