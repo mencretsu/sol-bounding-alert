@@ -14,6 +14,7 @@ async def get_token_info(mint: str) -> dict:
         }
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, headers=headers, timeout=10)
+            print(f"🔍 Token info status: {resp.status_code}")  # tambahin ini
             if resp.status_code == 200:
                 data = resp.json()
                 return {
